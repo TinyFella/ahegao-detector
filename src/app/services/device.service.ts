@@ -9,11 +9,11 @@ import { AnalyticsService } from './analytics.service';
  * script and not usual import.
  */
 
- /**
-  * Devices can't handle multiple requests at once and we don't know when they have processed the previous request. But hopefully they have
-  * after this time span.
-  */
- const THROTTLE_TIME = 250;
+/**
+ * Devices can't handle multiple requests at once and we don't know when they have processed the previous request. But hopefully they have
+ * after this time span.
+ */
+const THROTTLE_TIME = 250;
 
 @Injectable({
     providedIn: 'root'
@@ -21,7 +21,7 @@ import { AnalyticsService } from './analytics.service';
 export class DeviceService {
 
     public connectedDevices: ButtplugClientDevice[] = [];
-    public deviceChanges$ = new Subject<{event: 'connected' | 'disconnected', device: ButtplugClientDevice}>();
+    public deviceChanges$ = new Subject<{ event: 'connected' | 'disconnected', device: ButtplugClientDevice }>();
     public errors$ = new Subject<Error>();
 
     private _intensity$ = new Subject<number>();
@@ -29,7 +29,7 @@ export class DeviceService {
         return this._intensity$;
     }
 
-    private readonly connector = new window['Buttplug'].ButtplugEmbeddedClientConnector();
+    private readonly address = 'ws://localhost:12345';
     private readonly client = new window['Buttplug'].ButtplugClient('Ahegao Detector');
     private clientConnected = false;
     private inPriority = false;
@@ -39,18 +39,28 @@ export class DeviceService {
         this.client.addListener('deviceremoved', this.onDeviceRemoved.bind(this));
     }
 
-    public async connect(): Promise<void> {
+    public async connect(params?: { intiface?: boolean }): Promise<void> {
+        const connector = !!params?.intiface
+            ? new window['Buttplug'].ButtplugBrowserWebsocketClientConnector(this.address)
+            : new window['Buttplug'].ButtplugEmbeddedClientConnector();
+
         try {
             if (!this.clientConnected) {
-                await this.client.Connect(this.connector);
+                await this.client.Connect(connector);
                 this.clientConnected = true;
             }
 
             this.intensity$.pipe(
-                throttleTime(THROTTLE_TIME, undefined, {leading: false, trailing: true})
+                throttleTime(THROTTLE_TIME, undefined, { leading: false, trailing: true })
             ).subscribe((intensity) => this.sendIntensity(intensity));
 
-            await this.client.StartScanning();
+            if (!!params?.intiface) {
+                new window['Buttplug'].ButtplugBrowserWebsocketClientConnector(this.address);
+                await this.client.Connect(connector);
+            } else {
+                new window['Buttplug'].ButtplugEmbeddedClientConnector();
+                await this.client.StartScanning();
+            }
         } catch (e) {
             this.errorHandler(e);
         }
@@ -104,14 +114,14 @@ export class DeviceService {
 
     private onDeviceAdded(device: ButtplugClientDevice): void {
         this.connectedDevices.push(device);
-        this.deviceChanges$.next({event: 'connected', device});
+        this.deviceChanges$.next({ event: 'connected', device });
         AnalyticsService.event('device added', 'devices', device.Name);
     }
 
     private onDeviceRemoved(device: ButtplugClientDevice): void {
         const index = this.connectedDevices.indexOf(device);
         this.connectedDevices.splice(index, 1);
-        this.deviceChanges$.next({event: 'disconnected', device});
+        this.deviceChanges$.next({ event: 'disconnected', device });
     }
 
     private errorHandler(error: Error): void {

@@ -15,7 +15,7 @@ export class DeviceConnectorComponent implements OnInit {
     public readonly isIos = !this.supportsBluetooth && !!/(iPad|iPod|iPhone)/.exec(navigator.platform);
     public readonly hasBluetooth$: Promise<boolean> | undefined = (navigator as any).bluetooth?.getAvailability();
 
-    public devices: Array<{status: 'connected' | 'disconnected', device: ButtplugClientDevice}> = [];
+    public devices: Array<{ status: 'connected' | 'disconnected', device: ButtplugClientDevice }> = [];
     public isDeviceConnected = false;
     public isTesting = false;
 
@@ -32,7 +32,7 @@ export class DeviceConnectorComponent implements OnInit {
                 return device.device.Name !== event.device.Name || device.status === event.event;
             });
             // Add device
-            this.devices.push({device: event.device, status: event.event});
+            this.devices.push({ device: event.device, status: event.event });
 
             this.isDeviceConnected = !!this.deviceService.connectedDevices.length;
         });
@@ -58,6 +58,12 @@ export class DeviceConnectorComponent implements OnInit {
 
     public async startScanning(): Promise<void> {
         await this.deviceService.connect();
+    }
+
+    public async connectToIntifaceCentral(): Promise<void> {
+        await this.deviceService.connect({
+            intiface: true
+        });
     }
 
     public async test(): Promise<void> {

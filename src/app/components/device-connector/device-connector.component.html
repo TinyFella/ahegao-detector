@@ -5,7 +5,8 @@
 <div *ngIf="!collapsed">
     <h3>Connect vibrator</h3>
     <p>
-        You can connect your bluetooth toys with this game. When you can control your vibrator with an app on your phone,
+        You can connect your bluetooth toys with this game. When you can control your vibrator with an app on your
+        phone,
         the chances are high that you can connect it here, too. Check out
         <a href="https://iostindex.com/?filter0ButtplugSupport=2" target="_blank" rel="noopener nofollow">this list</a>
         to see which devices are supported.
@@ -13,14 +14,16 @@
     <div>
         <app-alert *ngIf="isIos" [type]="'error'">
             Bluetooth is currently not available on the usual browsers on iOS :(. You can either try
-            <a href="https://apps.apple.com/us/app/webble/id1193531073" target="_blank" rel="noopener nofollow">this browser</a>
+            <a href="https://apps.apple.com/us/app/webble/id1193531073" target="_blank" rel="noopener nofollow">this
+                browser</a>
             or use a computer or Android device instead.
         </app-alert>
         <app-alert *ngIf="!supportsBluetooth" [type]="'error'">
             Your browser doesn't support bluetooth. Please use an other browser like the current Google Chrome.
         </app-alert>
         <app-alert *ngIf="supportsBluetooth && (hasBluetooth$ | async) === false" [type]="'error'">
-            Your device hasn't bluetooth. You could use an USB bluetooth adapter or switch to a different device like a laptop or smartphone.
+            Your device hasn't bluetooth. You could use an USB bluetooth adapter or switch to a different device like a
+            laptop or smartphone.
         </app-alert>
     </div>
 
@@ -47,10 +50,12 @@
             </ng-template>
         </div>
         <button (click)="startScanning()" class="primary" appAutoBlur>Search for bluetooth devices</button>
+        <button (click)="connectToIntifaceCentral()" class="primary" appAutoBlur>Connect to Intiface Central</button>
 
         <app-alert *ngIf="isUnknownConnectionError" [type]="'error'">
             Error while connecting to the device. Usually it helps to restart the browser.<br />
-            Note that on mobile devices you have to open the list of recently used apps and swipe the browser out of that list to fully close it.
+            Note that on mobile devices you have to open the list of recently used apps and swipe the browser out of
+            that list to fully close it.
         </app-alert>
         <app-alert *ngIf="error" [type]="'error'">
             Error: {{error}} (Buttplug.io)
